@@ -115,16 +115,16 @@ for x in range(0, 16, -1):
     mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
 
 bouton_led:Dict[int, List[LedGroup]] = {
-    BOUTON1: [(mcp1, 1), (mcp1, 2), (mcp2, 8)],
-    BOUTON2: [(mcp1, 4), (mcp1, 2), (mcp2, 9)],
+    BOUTON1: [(mcp1, 15), (mcp1, 2), (mcp2, 8)],
+    BOUTON2: [(mcp1, 13), (mcp1, 2), (mcp2, 9)],
     BOUTON3: [(mcp1, 6), (mcp1, 7), (mcp2, 10)],
     BOUTON4: [(mcp1, 2), (mcp1, 10), (mcp2, 11)],
     BOUTON5: [(mcp1, 11), (mcp1, 12), (mcp2, 8)],
     BOUTON6: [(mcp1, 1), (mcp1, 3), (mcp2, 9)],
     BOUTON7: [(mcp1, 2), (mcp1, 4), (mcp2, 10)],
-    BOUTON8: [(mcp1, 6), (mcp1, 8), (mcp2, 11)],
+    BOUTON8: [(mcp1, 15), (mcp1, 8), (mcp2, 11)],
     BOUTON9: [(mcp1, 7), (mcp1, 6), (mcp2, 8)],
-    BOUTON10: [(mcp1, 1), (mcp1, 2), (mcp2, 9)],
+    BOUTON10: [(mcp1, 12), (mcp1, 2), (mcp2, 9)],
 }
 
 pygame.mixer.init(buffer=1024)
