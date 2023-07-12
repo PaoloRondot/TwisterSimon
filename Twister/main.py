@@ -158,7 +158,7 @@ print(song_dir_simon[0].all_parts)
 for song_path in song_dir_simon[0].all_parts:
     print(song_path)
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
-song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/Simon/full.mp3")
+song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/SimonPrev/full.mp3")
 
 for x in range(15, -1, -1):
     mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
