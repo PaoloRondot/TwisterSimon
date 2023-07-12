@@ -152,13 +152,13 @@ for index, dir in enumerate(list_dir_twister):
         song_dir_twister[index].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
 
 song_dir_simon:Dict[int, Song] = dict()
-list_dir_simon = ['/home/pi/TwisterSimon/SimonPrev/*.mp3']
+list_dir_simon = ['/home/pi/TwisterSimon/Simon/*.mp3']
 song_dir_simon[0] = Song(dir, ['/home/pi/TwisterSimon/Simon/' + str(i)+".mp3" for i in range(1,12)], [])
 print(song_dir_simon[0].all_parts)
 for song_path in song_dir_simon[0].all_parts:
     print(song_path)
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
-song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/SimonPrev/full.mp3")
+song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/Simon/full.mp3")
 
 for x in range(15, -1, -1):
     mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
