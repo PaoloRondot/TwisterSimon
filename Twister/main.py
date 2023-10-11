@@ -1,6 +1,12 @@
+from __future__ import print_function
+
+import sys
+sys.path.append("/home/pi/ola/python")
+
 import pygame
 import time
 import os
+import array
 # os.environ['SDL_AUDIODRIVER'] = 'dsp'
 import subprocess
 import glob
@@ -11,6 +17,21 @@ from RPiMCP23S17.MCP23S17 import MCP23S17
 import RPi.GPIO as GPIO
 import multiprocessing
 from random import shuffle, randrange
+import json
+from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import Universe
+
+GPIO.setmode(GPIO.BOARD)
+
+CHANNEL_RANGE = (0,3)
+data_save = array.array('B', [0]*45)
+universe = 1
+range_channels = range(CHANNEL_RANGE[0], CHANNEL_RANGE[1])
+def DmxSent(status):
+  if status.Succeeded():
+    print('Success!')
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
 
 @dataclass
 class Song:
@@ -22,110 +43,46 @@ class Song:
 class LedGroup:
     group_id: str
     leds: List[int]
-    device: MCP23S17
-    group_pin: int
+    channel: MCP23S17
 
-mcp1 = MCP23S17(bus=0x00, pin_cs=0, device_id=0x00)
-mcp2 = MCP23S17(bus=0x00, pin_cs=1, device_id=0x01)
-mcp1.open()
-mcp2.open()
-mcp1._spi.max_speed_hz=1000000
-mcp2._spi.max_speed_hz=1000000
+@dataclass
+class ChannelGroup:
+    group_name: str
+    channels: List[int]
 
-all_led_group: Dict[str, LedGroup] = {
-    'A': LedGroup('A', [1, 2], mcp1, 0),
-    'B': LedGroup('B', [3], mcp1, 1),
-    'C': LedGroup('C', [4, 5], mcp1, 2),
-    'D': LedGroup('D', [6, 7], mcp1, 3),
-    'E': LedGroup('E', [8], mcp1, 4),
-    'F': LedGroup('F', [9, 10], mcp1, 5),
-    'G': LedGroup('G', [11, 12], mcp1, 6),
-    'H': LedGroup('H', [13, 14], mcp1, 7),
-    'I': LedGroup('I', [15, 16], mcp1, 8),
-    'J': LedGroup('J', [17], mcp1, 9),
-    'K': LedGroup('K', [18, 19], mcp1, 10),
-    'L': LedGroup('L', [20, 21], mcp1, 11),
-    'M': LedGroup('M', [22, 23], mcp1, 12),
-    'N': LedGroup('N', [24], mcp1, 13),
-    'O': LedGroup('O', [25,26], mcp1, 14),
-    'P': LedGroup('P', [27,28], mcp1, 15),
-    'Q': LedGroup('Q', [29,30], mcp2, 0),
-    'R': LedGroup('R', [31], mcp2, 1),
-    'S': LedGroup('S', [32,33], mcp2, 2),
-    'T': LedGroup('T', [34,35], mcp2, 3),
-    'U': LedGroup('U', [36], mcp2, 4),
-    'V': LedGroup('V', [37,38], mcp2, 5),
-    'W': LedGroup('W', [39,40], mcp2, 6),
-    'X': LedGroup('X', [41,42], mcp2, 7),
-    'Y': LedGroup('Y', [43,44], mcp2, 8),
-    'Z': LedGroup('Z', [45], mcp2, 9),
-}
+led_groups = json.load(open("./leds_groups.json"))
+animations = json.load(open("./animations.json"))
 
 DELAY_EMPTY = 0.1#second
 
-leds_anim_Simon_won = [
-    ['A', 'B'], ['C', 'D'], ['E', 'F'], ['G', 'H'], ['I', 'J'], ['K', 'L'], ['M', 'N'], ['O', 'P'], ['Q', 'R'], ['S', 'T'], ['U', 'V'], ['W', 'X'], ['Y', 'Z'], [],
-    ['A', 'B', 'Y', 'Z'], ['C', 'D', 'Y', 'Z'], ['E', 'F', 'Y', 'Z'], ['G', 'H', 'Y', 'Z'], ['I', 'J', 'Y', 'Z'], ['K', 'L', 'Y', 'Z'], ['M', 'N', 'Y', 'Z'], ['O', 'P', 'Y', 'Z'], ['Q', 'R', 'Y', 'Z'], ['S', 'T', 'Y', 'Z'], ['U', 'V', 'Y', 'Z'], ['W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'W', 'X', 'Y', 'Z'], ['M', 'N', 'W', 'X', 'Y', 'Z'], ['O', 'P', 'W', 'X', 'Y', 'Z'], ['Q', 'R', 'W', 'X', 'Y', 'Z'], ['S', 'T', 'W', 'X', 'Y', 'Z'], ['U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['M', 'N', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['O', 'P', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['Q', 'R', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['M', 'N', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['O', 'P', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['M', 'N', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], [],
-    ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], []
-]
-
-leds_anim_Simon_lose = [
-    ['Y', 'Z'], ['W', 'X'], ['U', 'V'], ['S', 'T'], ['Q', 'R'], ['O', 'P'], ['M', 'N'], ['K', 'L'], ['I', 'J'], ['G', 'H'], ['E', 'F'], ['C', 'D'], ['A', 'B'], ['A', 'B'], ['C', 'D'], ['E', 'F'], ['G', 'H'], ['I', 'J'], ['K', 'L'], ['M', 'N'], ['O', 'P'], ['Q', 'R'], ['S', 'T'], ['U', 'V'], ['W', 'X'], ['Y', 'Z'], []
-]
-
-BOUTON1 = 29#5
-BOUTON2 = 31#6
-BOUTON3 = 32#12
-BOUTON4 = 36#16
-BOUTON5 = 11#17 
-BOUTON6 = 15#22 o 
-BOUTON7 = 16#23 o
-BOUTON8 = 18#24
-BOUTON9 = 22#25
-BOUTON10 = 37#26
+BOUTON1 = 40#21  29#5
+BOUTON2 = 38#20  31#6
+BOUTON3 = 37#26  32#12
+BOUTON4 = 36#16  36#16
+BOUTON5 = 35#19  11#17 
+BOUTON6 = 33#13  15#22 o 
+BOUTON7 = 32#12  16#23 o
+BOUTON8 = 31#6   18#24
 
 SWITCH_TWISTER = 13
 
 all_boutons = [
     [BOUTON1, 0], [BOUTON2, 0], [BOUTON3, 0], 
     [BOUTON4, 0], [BOUTON5, 0], [BOUTON6, 0], 
-    [BOUTON7, 0], [BOUTON8, 0], [BOUTON9, 0], 
-    [BOUTON10, 0]]
+    [BOUTON7, 0], [BOUTON8, 0], ]
 
 for bouton in all_boutons:
     GPIO.setup(bouton[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-for x in range(0, 16):
-    mcp1.setDirection(x, mcp1.DIR_OUTPUT)
-    mcp2.setDirection(x, mcp2.DIR_OUTPUT)
+subprocess.Popen(["ola_patch", "-d", "11", "-p", "0", "-u", "1"], stdout = subprocess.DEVNULL, text = True)
+wrapper = ClientWrapper()
+client = wrapper.Client()
 
-for x in range(0, 16, -1):
-    mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-    mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
+bouton_led:List[ChannelGroup] = [None]*8
 
-bouton_led:Dict[int, List[LedGroup]] = {
-    BOUTON1: [(mcp1, 15), (mcp1, 2), (mcp2, 8)],
-    BOUTON2: [(mcp1, 13), (mcp1, 2), (mcp2, 9)],
-    BOUTON3: [(mcp1, 6), (mcp1, 7), (mcp2, 10)],
-    BOUTON4: [(mcp1, 2), (mcp1, 10), (mcp2, 11)],
-    BOUTON5: [(mcp1, 11), (mcp1, 12), (mcp2, 8)],
-    BOUTON6: [(mcp1, 1), (mcp1, 3), (mcp2, 9)],
-    BOUTON7: [(mcp1, 2), (mcp1, 4), (mcp2, 10)],
-    BOUTON8: [(mcp1, 15), (mcp1, 8), (mcp2, 11)],
-    BOUTON9: [(mcp1, 7), (mcp1, 6), (mcp2, 8)],
-    BOUTON10: [(mcp1, 12), (mcp1, 2), (mcp2, 9)],
-}
+for group in led_groups["paolo_test"]:
+    bouton_led[group["bouton_id"]] = ChannelGroup(group["group_id"],group["channels"])
 
 pygame.mixer.init(buffer=1024)
 pygame.mixer.set_num_channels(50)
@@ -138,9 +95,8 @@ chan5 = pygame.mixer.Channel(4)
 chan6 = pygame.mixer.Channel(5)
 chan7 = pygame.mixer.Channel(6)
 chan8 = pygame.mixer.Channel(7)
-chan9 = pygame.mixer.Channel(8)
-chan10 = pygame.mixer.Channel(9)
-all_channels = [chan1, chan2, chan3, chan4, chan5, chan6, chan7, chan8, chan9, chan10]
+
+all_channels = [chan1, chan2, chan3, chan4, chan5, chan6, chan7, chan8]
 
 list_dir_twister = ['/home/pi/TwisterSimon/Lacoste/*.mp3']
 song_dir_twister:Dict[int, Song] = dict()
@@ -153,75 +109,87 @@ for index, dir in enumerate(list_dir_twister):
 
 song_dir_simon:Dict[int, Song] = dict()
 list_dir_simon = ['/home/pi/TwisterSimon/Simon/*.mp3']
-song_dir_simon[0] = Song(dir, ['/home/pi/TwisterSimon/Simon/' + str(i)+".mp3" for i in range(1,12)], [])
+song_dir_simon[0] = Song(dir, ['/home/pi/TwisterSimon/SimonPrev/' + str(i)+".mp3" for i in range(1,12)], [])
 print(song_dir_simon[0].all_parts)
 for song_path in song_dir_simon[0].all_parts:
     print(song_path)
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
 song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/SimonPrev/full.mp3")
 
+def write_group(group: List[int], mode: int, value: int = 255):
+    if type(group) != list:
+        group = [group]
+    for chan in group:
+        data_save[chan] = mode*value
+    client.SendDmx(universe, data_save, DmxSent)
+
+def write_everything(mode: int, value: int = 255):
+    data = array.array('B')
+    for idx in range_channels:
+        data.append(mode * value)
+    data_save = data
+    client.SendDmx(universe, data, DmxSent)
+
 for x in range(15, -1, -1):
-    mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-    mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
+    write_everything(0)
 
 for x in range(0, 16):
     time.sleep(0.05)
-    mcp1.digitalWrite(x, MCP23S17.LEVEL_HIGH)
-    mcp2.digitalWrite(x, MCP23S17.LEVEL_HIGH)
+    write_everything(1, 25)
 
 for x in range(15, -1, -1):
     time.sleep(0.05)
-    mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-    mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
+    write_everything(0)
 
 # sudo mount /dev/sda1 /mnt/usb -o uid=pi,gid=pi
 # sudo mkdir /mnt/usb
 
-def read_anim(leds_anim: list):
-    for rows in leds_anim:
-        if not rows:
-            time.sleep(DELAY_EMPTY)
-            continue
-        for id_group, group in all_led_group.items():
-            if id_group in rows:
-                group.device.digitalWrite(group.group_pin, MCP23S17.LEVEL_HIGH)
-            else:
-                group.device.digitalWrite(group.group_pin, MCP23S17.LEVEL_LOW)
+def check_interrupt() -> bool:
+    for bouton_i, bouton in enumerate(all_boutons):
+        if GPIO.input(bouton[0]) == 1:
+            print(bouton_i)
+            return True
+    return False
 
-def anim_waiting():
-    while True:
-        for x in range(0, 16):
-            time.sleep(0.1)
-            for bouton_i, bouton in enumerate(all_boutons):
-                if GPIO.input(bouton[0]) == 1:
-                    print(bouton_i)
+def read_anim(sequence: list, delay: float, repeat: int):
+    print(delay)
+    if repeat == 0:
+        for group in sequence:
+            data = array.array('B')
+            for chan in range_channels:
+                if chan in group:
+                    data.append(25)
+                else:
+                    data.append(0)
+            client.SendDmx(universe, data, DmxSent)
+            time.sleep(delay)
+    else:
+        while True:
+            for group in sequence:
+                data = array.array('B')
+                for chan in range_channels:
+                    if chan in group:
+                        data.append(255)
+                    else:
+                        data.append(0)
+                client.SendDmx(universe, data, DmxSent)
+                if not check_interrupt():
+                    time.sleep(delay)
+                else: 
+                    write_everything(0)
                     return
-            mcp1.digitalWrite(x, MCP23S17.LEVEL_HIGH)
-            mcp2.digitalWrite(x, MCP23S17.LEVEL_HIGH)
+    write_everything(0)
 
-        for x in range(15, -1, -1):
-            for bouton_i, bouton in enumerate(all_boutons):
-                if GPIO.input(bouton[0]) == 1:
-                    print(bouton_i)
-                    return
-            time.sleep(0.1)
-            mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-            mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
-
-def anim_won():
-    for x in range(0, 16):
-        time.sleep(0.01)
-        mcp1.digitalWrite(x, MCP23S17.LEVEL_HIGH)
-        mcp2.digitalWrite(x, MCP23S17.LEVEL_HIGH)
-
-    for x in range(15, -1, -1):
-        time.sleep(0.01)
-        mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-        mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
+def play_anim(name_anim: str):
+    for anim in animations["animations"]:
+        if anim["anim_name"] == name_anim:
+            read_anim(anim["sequence"], anim["delay_sec_between"], anim["repeat"])
+            break
 
 def loop_twister():
-    if GPIO.input(SWITCH_TWISTER) == 0:
-        return
+    # if GPIO.input(SWITCH_TWISTER) == 0:
+    #     chan1.stop()
+    #     return
     while True:
         print("new loop...", end=" ")
         num_song = len(song_dir_twister[0].all_parts)
@@ -230,8 +198,9 @@ def loop_twister():
             all_channels[pg_sound_i].set_volume(0)
 
         while chan8.get_busy():
-            if GPIO.input(SWITCH_TWISTER) == 0:
-                return
+            # if GPIO.input(SWITCH_TWISTER) == 0:
+            #     chan1.stop()
+            #     return
             for bouton_i, bouton in enumerate(all_boutons):
                 if bouton_i >= num_song:
                     continue
@@ -239,13 +208,13 @@ def loop_twister():
                     print(str(GPIO.input(bouton[0])) + " " + str(bouton[1]))
                     print("changed" + str(bouton_i))
                     if bouton[1] == 0:
-                        for led_tuple in bouton_led[all_boutons[bouton_i][0]]:
-                            led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
+                        write_group(bouton_i, 1)
+                        # for led_tuple in bouton_led[all_boutons[bouton_i][0]]:
+                        #     led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
                         all_channels[bouton_i].set_volume(100)
                         bouton[1] = 1
                     elif bouton[1] == 1:
-                        for led_tuple in bouton_led[all_boutons[bouton_i][0]]:
-                            led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_LOW)
+                        write_group(bouton_i, 0)
                         all_channels[bouton_i].set_volume(0)
                         bouton[1] = 0
 
@@ -256,6 +225,7 @@ def loop_twister():
 def loop_simon():
     if GPIO.input(SWITCH_TWISTER) == 1:
         return
+    chan1.set_volume(100)
     bouton_music:Dict[int, tuple[int, pygame.mixer.Sound]] = dict()
     reset = True
     game_running = False
@@ -346,7 +316,7 @@ def loop_simon():
                         break
 
 while True:
-    loop_simon()
+    # loop_simon()
     loop_twister()
 #         while True:
 #             num_song = len(song_dir[index].all_parts)
