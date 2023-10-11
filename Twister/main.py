@@ -23,7 +23,7 @@ from ola.OlaClient import Universe
 
 GPIO.setmode(GPIO.BOARD)
 
-CHANNEL_RANGE = (0,3)
+CHANNEL_RANGE = (0,4)
 data_save = array.array('B', [0]*45)
 universe = 1
 range_channels = range(CHANNEL_RANGE[0], CHANNEL_RANGE[1])
@@ -75,7 +75,7 @@ for bouton in all_boutons:
     GPIO.setup(bouton[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-subprocess.Popen(["ola_patch", "-d", "11", "-p", "0", "-u", "1"], stdout = subprocess.DEVNULL, text = True)
+# subprocess.Popen(["ola_patch", "-d", "11", "-p", "0", "-u", "1"], stdout = subprocess.DEVNULL, text = True)
 wrapper = ClientWrapper()
 client = wrapper.Client()
 
@@ -185,6 +185,8 @@ def play_anim(name_anim: str):
         if anim["anim_name"] == name_anim:
             read_anim(anim["sequence"], anim["delay_sec_between"], anim["repeat"])
             break
+
+play_anim("paolo_test")
 
 def loop_twister():
     # if GPIO.input(SWITCH_TWISTER) == 0:
