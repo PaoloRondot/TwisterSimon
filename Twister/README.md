@@ -33,7 +33,7 @@ dtoverlay=disable-bt
 enable_uart=1
 init_uart_clock=16000000
 ```
-* then open `/home/midirasp2/.ola/ola-uartdmx.conf` (with nano for instance) and fill it with
+* then open `/home/midirasp02/.ola/ola-uartdmx.conf` (with nano for instance) and fill it with
 ```
 /dev/ttyAMA0-break = 100
 /dev/ttyAMA0-malf = 24000
@@ -63,6 +63,12 @@ then open the file `/etc/rc.local` (needs sudo) and add the following lines befo
 chmod 777 /dev/ttyAMA0
 sudo /usr/bin/set_dmx_mode 1
 sudo -u olad /usr/bin/olad -l 3
+```
+* Next step:
+```
+sudo apt remove ola
+sudo apt autoclean && sudo apt autoremove
+cd 
 ```
 ## Start ola on boot
 run
@@ -119,5 +125,5 @@ Show ola stuff
 ola_dev_info
 ```
 ```
-systemctl status -u twister.service
+systemctl status --user twister.service
 ```

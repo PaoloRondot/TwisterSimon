@@ -83,7 +83,7 @@ for bouton in all_boutons:
     GPIO.setup(bouton[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-subprocess.Popen(["ola_patch", "-d", "3", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
+subprocess.Popen(["ola_patch", "-d", "9", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
 wrapper = ClientWrapper()
 client = wrapper.Client()
 
@@ -240,7 +240,7 @@ def loop_twister():
             all_channels[pg_sound_i].set_volume(0)
         
         if time.time() - start_time > DELAY_WAITING:
-            pick_random_and_play("paolo_test")
+            pick_random_and_play("waiting")
             start_time = time.time()
 
         while chan8.get_busy():
@@ -271,98 +271,98 @@ def loop_twister():
             bouton[1] = 0
 
 # loop_twister()
-def loop_simon():
-    if GPIO.input(SWITCH_TWISTER) == 1:
-        return
-    chan1.set_volume(100)
-    bouton_music:Dict[int, tuple[int, pygame.mixer.Sound]] = dict()
-    reset = True
-    game_running = False
-    while True:
-        if GPIO.input(SWITCH_TWISTER) == 1:
-            return
-        if reset:
-            list_boutons:List[int] = [i for i in range(0, 10)]
-            list_boutons.append(randrange(10))
-            shuffle(list_boutons)
-            print(list_boutons)
-            for bouton_i, bouton in enumerate(list_boutons):
-                bouton_music[bouton_i] = (all_boutons[bouton][0], song_dir_simon[0].all_pygame_sounds[bouton_i])
-            reset = False
+# def loop_simon():
+#     if GPIO.input(SWITCH_TWISTER) == 1:
+#         return
+#     chan1.set_volume(100)
+#     bouton_music:Dict[int, tuple[int, pygame.mixer.Sound]] = dict()
+#     reset = True
+#     game_running = False
+#     while True:
+#         if GPIO.input(SWITCH_TWISTER) == 1:
+#             return
+#         if reset:
+#             list_boutons:List[int] = [i for i in range(0, 10)]
+#             list_boutons.append(randrange(10))
+#             shuffle(list_boutons)
+#             print(list_boutons)
+#             for bouton_i, bouton in enumerate(list_boutons):
+#                 bouton_music[bouton_i] = (all_boutons[bouton][0], song_dir_simon[0].all_pygame_sounds[bouton_i])
+#             reset = False
         
-        # for bouton_i, bouton in enumerate(all_boutons):
-        #     if GPIO.input(bouton[0]) == 1:
-        anim_waiting()
-        for x in range(15, -1, -1):
-            mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
-            mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
-        game_running = True
-        start_time = time.time()
-        level = 0
-        button_pointer = 0
-        my_turn = True
-        while game_running:
-            if GPIO.input(SWITCH_TWISTER) == 1:
-                return
-            if time.time() - start_time > 30:
-                reset = True
-                game_running = False
-                break
+#         # for bouton_i, bouton in enumerate(all_boutons):
+#         #     if GPIO.input(bouton[0]) == 1:
+#         anim_waiting()
+#         for x in range(15, -1, -1):
+#             mcp1.digitalWrite(x, MCP23S17.LEVEL_LOW)
+#             mcp2.digitalWrite(x, MCP23S17.LEVEL_LOW)
+#         game_running = True
+#         start_time = time.time()
+#         level = 0
+#         button_pointer = 0
+#         my_turn = True
+#         while game_running:
+#             if GPIO.input(SWITCH_TWISTER) == 1:
+#                 return
+#             if time.time() - start_time > 30:
+#                 reset = True
+#                 game_running = False
+#                 break
 
-            if my_turn:
-                if level == 11:
-                    print("YOU WON")
-                    reset = True
-                    game_running = False
-                    chan1.play(song_full_simon)
-                    read_anim(leds_anim_Simon_won)
-                    while chan1.get_busy():
-                        pass
-                    break
-                for i in range(0,level+1):
-                    chan1.play(bouton_music[i][1])
-                    for led_tuple in bouton_led[bouton_music[i][0]]:
-                        led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
-                    while chan1.get_busy():
-                        pass
-                    for led_tuple in bouton_led[bouton_music[i][0]]:
-                            led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_LOW)
-                my_turn = False
-                print("YOUR TURN")
-                print(str(bouton_music[button_pointer][0]))
+#             if my_turn:
+#                 if level == 11:
+#                     print("YOU WON")
+#                     reset = True
+#                     game_running = False
+#                     chan1.play(song_full_simon)
+#                     read_anim(leds_anim_Simon_won)
+#                     while chan1.get_busy():
+#                         pass
+#                     break
+#                 for i in range(0,level+1):
+#                     chan1.play(bouton_music[i][1])
+#                     for led_tuple in bouton_led[bouton_music[i][0]]:
+#                         led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
+#                     while chan1.get_busy():
+#                         pass
+#                     for led_tuple in bouton_led[bouton_music[i][0]]:
+#                             led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_LOW)
+#                 my_turn = False
+#                 print("YOUR TURN")
+#                 print(str(bouton_music[button_pointer][0]))
 
-            if not my_turn:
-                if button_pointer == level + 1:
-                    my_turn = True
-                    button_pointer = 0
-                    level = level + 1
-                    continue
-                for bouton_i, bouton in enumerate(all_boutons):
-                    if GPIO.input(bouton[0]) == 1 and bouton[0] == bouton_music[button_pointer][0]:
-                        start_time = time.time()
-                        print("pressed " + str(bouton[0]))
-                        while GPIO.input(bouton[0]) == 1:
-                            pass
-                        chan1.play(bouton_music[button_pointer][1])
-                        for led_tuple in bouton_led[bouton_music[button_pointer][0]]:
-                            led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
-                        while chan1.get_busy():
-                            pass
-                        for led_tuple in bouton_led[bouton_music[button_pointer][0]]:
-                                led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_LOW)
-                        button_pointer = button_pointer + 1
-                        print("GOOD")
-                        if button_pointer != level + 1:
-                            print("Keep going... (next one: " + str(list_boutons[button_pointer+1]) +")")
-                    elif GPIO.input(bouton[0]) == 1 and bouton[0] != bouton_music[button_pointer][0]:
-                        print("pressed " + str(bouton[0]) + " instead of " + str(bouton_music[button_pointer][0]))
-                        while GPIO.input(bouton[0]) == 1:
-                            pass
-                        print("YOU LOST")
-                        read_anim(leds_anim_Simon_lose)
-                        reset = True
-                        game_running = False
-                        break
+#             if not my_turn:
+#                 if button_pointer == level + 1:
+#                     my_turn = True
+#                     button_pointer = 0
+#                     level = level + 1
+#                     continue
+#                 for bouton_i, bouton in enumerate(all_boutons):
+#                     if GPIO.input(bouton[0]) == 1 and bouton[0] == bouton_music[button_pointer][0]:
+#                         start_time = time.time()
+#                         print("pressed " + str(bouton[0]))
+#                         while GPIO.input(bouton[0]) == 1:
+#                             pass
+#                         chan1.play(bouton_music[button_pointer][1])
+#                         for led_tuple in bouton_led[bouton_music[button_pointer][0]]:
+#                             led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
+#                         while chan1.get_busy():
+#                             pass
+#                         for led_tuple in bouton_led[bouton_music[button_pointer][0]]:
+#                                 led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_LOW)
+#                         button_pointer = button_pointer + 1
+#                         print("GOOD")
+#                         if button_pointer != level + 1:
+#                             print("Keep going... (next one: " + str(list_boutons[button_pointer+1]) +")")
+#                     elif GPIO.input(bouton[0]) == 1 and bouton[0] != bouton_music[button_pointer][0]:
+#                         print("pressed " + str(bouton[0]) + " instead of " + str(bouton_music[button_pointer][0]))
+#                         while GPIO.input(bouton[0]) == 1:
+#                             pass
+#                         print("YOU LOST")
+#                         read_anim(leds_anim_Simon_lose)
+#                         reset = True
+#                         game_running = False
+#                         break
 
 while True:
     # loop_simon()
