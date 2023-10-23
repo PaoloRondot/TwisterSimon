@@ -68,8 +68,10 @@ sudo -u olad /usr/bin/olad -l 3
 ```
 sudo apt remove ola
 sudo apt autoclean && sudo apt autoremove
-cd 
+cd ~/ola
+sudo make install
 ```
+and reboot
 ## Start ola on boot
 run
 ```

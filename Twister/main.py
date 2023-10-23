@@ -25,7 +25,7 @@ from ola.OlaClient import Universe
 
 DELAY_WAITING = 60
 DELAY_WAITING_BETWEEN = 60
-MAX_LIGHT = 10
+MAX_LIGHT = 255
 
 GPIO.setmode(GPIO.BOARD)
 
