@@ -88,9 +88,36 @@ git clone https://github.com/PaoloRondot/TwisterSimon.git
 cd TwisterSimon
 git checkout dmx
 ```
+## Start Twister on boot
+```
+cd ~/.config/systemd/user
+nano twister.service
+```
+paste the following:
+```
+[Unit]
+ Description=Service for the mqtt daemon
+ Wants=sound.target
+ After=sound.target
+
+ [Service]
+ Type=idle
+ ExecStart=/usr/bin/python /home/pi/TwisterSimon/Twister/main.py
+
+ [Install]
+ WantedBy=default.target
+```
+close the file, then run
+```
+systemctl --user daemon-reload
+systemctl --user enable twister.service
+```
 
 # For Paolo
 Show ola stuff
 ```
 ola_dev_info
+```
+```
+systemctl status -u twister.service
 ```
