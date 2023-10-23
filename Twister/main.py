@@ -89,7 +89,7 @@ client = wrapper.Client()
 
 bouton_led:List[ChannelGroup] = [None]*8
 
-for group in led_groups["paolo_test"]:
+for group in led_groups["config_1"]:
     bouton_led[group["bouton_id"]] = ChannelGroup(group["group_id"],group["channels"])
 
 pygame.mixer.init(buffer=1024)
