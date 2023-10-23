@@ -29,7 +29,7 @@ GPIO.setmode(GPIO.BOARD)
 
 # TODO: take into account index starts at 1
 
-CHANNEL_RANGE = (0,4)
+CHANNEL_RANGE = (0,45)
 data_save = array.array('B', [0]*45)
 universe = 1
 range_channels = range(CHANNEL_RANGE[0], CHANNEL_RANGE[1])
