@@ -1,7 +1,9 @@
 from __future__ import print_function
 
+USER_NAME = "midirasp02"
+
 import sys
-sys.path.append("/home/midirasp02/ola/python")
+sys.path.append("/home/" + USER_NAME + "/ola/python")
 
 import pygame
 import time
@@ -56,8 +58,8 @@ class ChannelGroup:
     group_name: str
     channels: List[int]
 
-led_groups = json.load(open("/home/pi/TwisterSimon/Twister/leds_groups.json"))
-animations = json.load(open("/home/pi/TwisterSimon/Twister/animations.json"))
+led_groups = json.load(open("/home/" + USER_NAME + "/TwisterSimon/Twister/leds_groups.json"))
+animations = json.load(open("/home/" + USER_NAME + "/TwisterSimon/Twister/animations.json"))
 
 DELAY_EMPTY = 0.1#second
 
@@ -104,7 +106,7 @@ chan8 = pygame.mixer.Channel(7)
 
 all_channels = [chan1, chan2, chan3, chan4, chan5, chan6, chan7, chan8]
 
-list_dir_twister = ['/home/pi/TwisterSimon/Lacoste/*.mp3']
+list_dir_twister = ['/home/' + USER_NAME + '/TwisterSimon/Lacoste/*.mp3']
 song_dir_twister:Dict[int, Song] = dict()
 
 for index, dir in enumerate(list_dir_twister):
@@ -114,13 +116,13 @@ for index, dir in enumerate(list_dir_twister):
         song_dir_twister[index].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
 
 song_dir_simon:Dict[int, Song] = dict()
-list_dir_simon = ['/home/pi/TwisterSimon/Simon/*.mp3']
-song_dir_simon[0] = Song(dir, ['/home/pi/TwisterSimon/SimonPrev/' + str(i)+".mp3" for i in range(1,12)], [])
+list_dir_simon = ['/home/' + USER_NAME + '/TwisterSimon/Simon/*.mp3']
+song_dir_simon[0] = Song(dir, ['/home/' + USER_NAME + '/TwisterSimon/SimonPrev/' + str(i)+".mp3" for i in range(1,12)], [])
 print(song_dir_simon[0].all_parts)
 for song_path in song_dir_simon[0].all_parts:
     print(song_path)
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
-song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/SimonPrev/full.mp3")
+song_full_simon = pygame.mixer.Sound("/home/" + USER_NAME + "/TwisterSimon/SimonPrev/full.mp3")
 
 def write_group(group: List[int], mode: int, value: int = MAX_LIGHT):
     if type(group) != list:
