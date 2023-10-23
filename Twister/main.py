@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import sys
-sys.path.append("/home/pi/ola/python")
+sys.path.append("/home/midirasp02/ola/python")
 
 import pygame
 import time
