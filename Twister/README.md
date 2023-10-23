@@ -1,6 +1,9 @@
 # Installation
 ## ola
-go to `/home/pi`
+```
+sudo apt install ola
+```
+* go to `/home/pi`
 ```
 sudo apt-get install autoconf automake bison flex g++ libavahi-client-dev libcppunit-dev libftdi-dev liblo-dev libmicrohttpd-dev libncurses-dev libprotobuf-dev libprotoc-dev libtool libusb-1.0.0-dev make protobuf-compiler pkg-config uuid-dev zlib1g-dev
 ```
@@ -18,25 +21,27 @@ make -j4
 sudo make install 
 ```
 ```
-sudo adduser olad tty
+sudo adduser olad tty 
+sudo adduser olad dialout
 ```
 ```
 sudo systemctl disable serial-getty@ttyAMA0.service
 ```
-then open `/boot/config.txt` (with nano for instance) and add the lines (somewhere in the file) and close the file with ctrl+o, enter, ctrl+x
+* then open `/boot/config.txt` (needs sudo, with nano for instance) and add the lines (somewhere in the file) and close the file with ctrl+o, enter, ctrl+x
 ```
 dtoverlay=disable-bt
 enable_uart=1
 init_uart_clock=16000000
 ```
-then open `/home/midirasp2/.ola/ola-uartdmx.conf` (with nano for instance) and fill it with
+* then open `/home/midirasp2/.ola/ola-uartdmx.conf` (with nano for instance) and fill it with
 ```
 /dev/ttyAMA0-break = 100
 /dev/ttyAMA0-malf = 24000
 device = /dev/ttyAMA0
 enabled = true
 ```
-then run `sudo nano /usr/bin/set_dmx_mode` and copy paste:
+do the same with `/etc/ola/ola-uartdmx.conf`
+* then run `sudo nano /usr/bin/set_dmx_mode` and copy paste:
 ```
 #!/bin/sh
 # set_dmx_mode
@@ -53,11 +58,17 @@ fi
 echo out > $gpio/direction
 echo $1 > $gpio/value
 ```
-then open the file `/etc/rc.local` and add the following lines before the `exit 0` line:
+then open the file `/etc/rc.local` (needs sudo) and add the following lines before the `exit 0` line:
 ```
 chmod 777 /dev/ttyAMA0
 sudo /usr/bin/set_dmx_mode 1
-/usr/bin/olad -l 3
+sudo -u olad /usr/bin/olad -l 3
+```
+## Start ola on boot
+run
+```
+sudo mkdir /usr/lib/olad
+sudo cp -r /etc/ola /usr/lib/olad/.ola
 ```
 ## Twister
 ### Python stuff
@@ -76,4 +87,10 @@ git clone https://github.com/PaoloRondot/TwisterSimon.git
 ```
 cd TwisterSimon
 git checkout dmx
+```
+
+# For Paolo
+Show ola stuff
+```
+ola_dev_info
 ```

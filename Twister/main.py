@@ -16,12 +16,18 @@ from typing import List
 from RPiMCP23S17.MCP23S17 import MCP23S17
 import RPi.GPIO as GPIO
 import multiprocessing
-from random import shuffle, randrange
+from random import shuffle, randrange, choice
 import json
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
+DELAY_WAITING = 60
+DELAY_WAITING_BETWEEN = 60
+MAX_LIGHT = 10
+
 GPIO.setmode(GPIO.BOARD)
+
+# TODO: take into account index starts at 1
 
 CHANNEL_RANGE = (0,4)
 data_save = array.array('B', [0]*45)
@@ -50,8 +56,8 @@ class ChannelGroup:
     group_name: str
     channels: List[int]
 
-led_groups = json.load(open("./leds_groups.json"))
-animations = json.load(open("./animations.json"))
+led_groups = json.load(open("/home/pi/TwisterSimon/Twister/leds_groups.json"))
+animations = json.load(open("/home/pi/TwisterSimon/Twister/animations.json"))
 
 DELAY_EMPTY = 0.1#second
 
@@ -75,7 +81,7 @@ for bouton in all_boutons:
     GPIO.setup(bouton[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# subprocess.Popen(["ola_patch", "-d", "11", "-p", "0", "-u", "1"], stdout = subprocess.DEVNULL, text = True)
+subprocess.Popen(["ola_patch", "-d", "3", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
 wrapper = ClientWrapper()
 client = wrapper.Client()
 
@@ -116,14 +122,14 @@ for song_path in song_dir_simon[0].all_parts:
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
 song_full_simon = pygame.mixer.Sound("/home/pi/TwisterSimon/SimonPrev/full.mp3")
 
-def write_group(group: List[int], mode: int, value: int = 255):
+def write_group(group: List[int], mode: int, value: int = MAX_LIGHT):
     if type(group) != list:
         group = [group]
     for chan in group:
         data_save[chan] = mode*value
     client.SendDmx(universe, data_save, DmxSent)
 
-def write_everything(mode: int, value: int = 255):
+def write_everything(mode: int, value: int = MAX_LIGHT):
     data = array.array('B')
     for idx in range_channels:
         data.append(mode * value)
@@ -144,6 +150,16 @@ for x in range(15, -1, -1):
 # sudo mount /dev/sda1 /mnt/usb -o uid=pi,gid=pi
 # sudo mkdir /mnt/usb
 
+def sleep_custom(delay_sec: int):
+    counter: int = 0
+    while True:
+        time.sleep(delay_sec / 100)
+        if check_interrupt():
+            return
+        if counter == delay_sec * 100:
+            break
+        counter += 1
+
 def check_interrupt() -> bool:
     for bouton_i, bouton in enumerate(all_boutons):
         if GPIO.input(bouton[0]) == 1:
@@ -152,54 +168,82 @@ def check_interrupt() -> bool:
     return False
 
 def read_anim(sequence: list, delay: float, repeat: int):
-    print(delay)
     if repeat == 0:
         for group in sequence:
             data = array.array('B')
             for chan in range_channels:
                 if chan in group:
-                    data.append(25)
+                    data.append(MAX_LIGHT)
                 else:
                     data.append(0)
             client.SendDmx(universe, data, DmxSent)
-            time.sleep(delay)
+            sleep_custom(delay)
     else:
-        while True:
+        for i in range(0, repeat):
             for group in sequence:
                 data = array.array('B')
                 for chan in range_channels:
                     if chan in group:
-                        data.append(255)
+                        data.append(MAX_LIGHT)
                     else:
                         data.append(0)
                 client.SendDmx(universe, data, DmxSent)
                 if not check_interrupt():
-                    time.sleep(delay)
-                else: 
+                    sleep_custom(delay)
+                else:
                     write_everything(0)
                     return
     write_everything(0)
 
 def play_anim(name_anim: str):
-    for anim in animations["animations"]:
-        if anim["anim_name"] == name_anim:
-            read_anim(anim["sequence"], anim["delay_sec_between"], anim["repeat"])
+    for anim_type in animations["animations"]:
+        print(anim_type)
+        for anims in anim_type:
+            for anim in anim_type[anims]:
+                print(anim)
+                if anim["anim_name"] == name_anim:
+                    read_anim(anim["sequence"], anim["delay_sec_between"], anim["repeat"])
+                    break
+
+def pick_random_and_play(anim_type: str):
+    while True:
+        if check_interrupt():
+            return
+        list_anims = animations["animations"]
+        for anim in list_anims:
+            if anim_type not in anim:
+                continue
+            anim_picked = choice(anim[anim_type])
             break
+        read_anim(anim_picked["sequence"], anim_picked["delay_sec_between"], anim_picked["repeat"])
+        start_time = time.time()
+        while time.time() - start_time < DELAY_WAITING_BETWEEN:
+            if check_interrupt():
+                return
+        if check_interrupt():
+            return
 
-play_anim("paolo_test")
-
+# play_anim("paolo_test")
+# input("paolo")
 def loop_twister():
     # if GPIO.input(SWITCH_TWISTER) == 0:
     #     chan1.stop()
     #     return
+    start_time = time.time()
     while True:
         print("new loop...", end=" ")
         num_song = len(song_dir_twister[0].all_parts)
         for pg_sound_i, pg_sound in enumerate(song_dir_twister[0].all_pygame_sounds):
             all_channels[pg_sound_i].play(pg_sound)
             all_channels[pg_sound_i].set_volume(0)
+        
+        if time.time() - start_time > DELAY_WAITING:
+            pick_random_and_play("paolo_test")
+            start_time = time.time()
 
         while chan8.get_busy():
+            if time.time() - start_time > DELAY_WAITING:
+                break
             # if GPIO.input(SWITCH_TWISTER) == 0:
             #     chan1.stop()
             #     return
@@ -207,16 +251,17 @@ def loop_twister():
                 if bouton_i >= num_song:
                     continue
                 if GPIO.input(bouton[0]) != bouton[1]:
+                    start_time = time.time()
                     print(str(GPIO.input(bouton[0])) + " " + str(bouton[1]))
                     print("changed" + str(bouton_i))
                     if bouton[1] == 0:
-                        write_group(bouton_i, 1)
+                        write_group(bouton_led[bouton_i].channels, 1)
                         # for led_tuple in bouton_led[all_boutons[bouton_i][0]]:
                         #     led_tuple[0].digitalWrite(led_tuple[1], MCP23S17.LEVEL_HIGH)
                         all_channels[bouton_i].set_volume(100)
                         bouton[1] = 1
                     elif bouton[1] == 1:
-                        write_group(bouton_i, 0)
+                        write_group(bouton_led[bouton_i].channels, 0)
                         all_channels[bouton_i].set_volume(0)
                         bouton[1] = 0
 

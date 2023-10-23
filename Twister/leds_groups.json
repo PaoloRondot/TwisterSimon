@@ -1,5 +1,15 @@
 {
     "config_1": [
+        {"group_id":"A", "channels":[1,2,4,5,8,11], "bouton_id": 0},
+        {"group_id":"B", "channels":[3,6,7,9,10], "bouton_id": 1},
+        {"group_id":"C", "channels":[12,15,18,19,22], "bouton_id": 2},
+        {"group_id":"D", "channels":[13,14,16,17,20,21], "bouton_id": 3},
+        {"group_id":"E", "channels":[25,26,29,30,32,33], "bouton_id": 4},
+        {"group_id":"F", "channels":[23,24,27,28,31], "bouton_id": 5},
+        {"group_id":"G", "channels":[36,37,39,40,43,44], "bouton_id": 6},
+        {"group_id":"H", "channels":[34,35,38,41,42,45], "bouton_id": 7}
+    ],
+    "config_2": [
         {"group_id":"A", "channels":[0,1,2], "bouton_id": 0},
         {"group_id":"B", "channels":[3,4,5], "bouton_id": 1},
         {"group_id":"C", "channels":[6,7,8], "bouton_id": 2},
