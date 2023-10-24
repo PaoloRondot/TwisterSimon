@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-USER_NAME = "midirasp02"
+USER_NAME = "pi"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
@@ -106,7 +106,7 @@ chan8 = pygame.mixer.Channel(7)
 
 all_channels = [chan1, chan2, chan3, chan4, chan5, chan6, chan7, chan8]
 
-list_dir_twister = ['/home/' + USER_NAME + '/TwisterSimon/Lacoste/*.mp3']
+list_dir_twister = ['/home/' + USER_NAME + '/TwisterSimon/Lacoste/*.wav']
 song_dir_twister:Dict[int, Song] = dict()
 
 for index, dir in enumerate(list_dir_twister):
@@ -115,20 +115,21 @@ for index, dir in enumerate(list_dir_twister):
     for song_path in song_dir_twister[index].all_parts:
         song_dir_twister[index].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
 
-song_dir_simon:Dict[int, Song] = dict()
-list_dir_simon = ['/home/' + USER_NAME + '/TwisterSimon/Simon/*.mp3']
-song_dir_simon[0] = Song(dir, ['/home/' + USER_NAME + '/TwisterSimon/SimonPrev/' + str(i)+".mp3" for i in range(1,12)], [])
-print(song_dir_simon[0].all_parts)
-for song_path in song_dir_simon[0].all_parts:
-    print(song_path)
-    song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
-song_full_simon = pygame.mixer.Sound("/home/" + USER_NAME + "/TwisterSimon/SimonPrev/full.mp3")
+# song_dir_simon:Dict[int, Song] = dict()
+# list_dir_simon = ['/home/' + USER_NAME + '/TwisterSimon/Simon/*.mp3']
+# song_dir_simon[0] = Song(dir, ['/home/' + USER_NAME + '/TwisterSimon/SimonPrev/' + str(i)+".mp3" for i in range(1,12)], [])
+# print(song_dir_simon[0].all_parts)
+# for song_path in song_dir_simon[0].all_parts:
+#     print(song_path)
+#     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
+# song_full_simon = pygame.mixer.Sound("/home/" + USER_NAME + "/TwisterSimon/SimonPrev/full.mp3")
 
 def write_group(group: List[int], mode: int, value: int = MAX_LIGHT):
     if type(group) != list:
         group = [group]
+    print(group)
     for chan in group:
-        data_save[chan] = mode*value
+        data_save[chan-1] = mode*value
     client.SendDmx(universe, data_save, DmxSent)
 
 def write_everything(mode: int, value: int = MAX_LIGHT):
@@ -138,16 +139,13 @@ def write_everything(mode: int, value: int = MAX_LIGHT):
     data_save = data
     client.SendDmx(universe, data, DmxSent)
 
-for x in range(15, -1, -1):
-    write_everything(0)
+write_everything(0)
 
-for x in range(0, 16):
-    time.sleep(0.05)
-    write_everything(1, 25)
+time.sleep(1)
+write_everything(1, 25)
 
-for x in range(15, -1, -1):
-    time.sleep(0.05)
-    write_everything(0)
+time.sleep(1)
+write_everything(0)
 
 # sudo mount /dev/sda1 /mnt/usb -o uid=pi,gid=pi
 # sudo mkdir /mnt/usb
