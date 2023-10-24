@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-USER_NAME = "pi"
+USER_NAME = "midirasp02"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
