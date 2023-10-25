@@ -230,8 +230,9 @@ def pick_random_and_play(anim_type: str):
         if check_interrupt():
             pygame.mixer.music.stop()
             return
-
-# play_anim("paolo_test")
+while True:
+    play_anim("test_charlie")
+    time.sleep(5)
 # input("paolo")
 def loop_twister():
     # if GPIO.input(SWITCH_TWISTER) == 0:
