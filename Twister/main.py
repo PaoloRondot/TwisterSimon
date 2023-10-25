@@ -182,10 +182,10 @@ def read_anim(sequence: list, delay: float, repeat: int):
             client.SendDmx(universe, data, DmxSent)
             sleep_custom(delay)
     else:
-        group = [i-1 for i in group]
-        print(group)
         for i in range(0, repeat):
             for group in sequence:
+                group = [i-1 for i in group]
+                print(group)
                 data = array.array('B')
                 for chan in range_channels:
                     if chan in group:
