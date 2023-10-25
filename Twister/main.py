@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-USER_NAME = "midirasp02"
-# USER_NAME = "pi"
+# USER_NAME = "midirasp02"
+USER_NAME = "pi"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
@@ -172,7 +172,6 @@ def check_interrupt() -> bool:
 
 def read_anim(sequence: list, delay: float, repeat: int):
     if repeat == 0:
-        group = [i-1 for i in group]
         for group in sequence:
             data = array.array('B')
             for chan in range_channels:
@@ -183,6 +182,8 @@ def read_anim(sequence: list, delay: float, repeat: int):
             client.SendDmx(universe, data, DmxSent)
             sleep_custom(delay)
     else:
+        group = [i-1 for i in group]
+        print(group)
         for i in range(0, repeat):
             for group in sequence:
                 data = array.array('B')
