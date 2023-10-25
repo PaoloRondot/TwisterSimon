@@ -32,8 +32,8 @@ GPIO.setmode(GPIO.BOARD)
 
 # TODO: take into account index starts at 1
 
-CHANNEL_RANGE = (0,45)
-data_save = array.array('B', [0]*45)
+CHANNEL_RANGE = (1,46)
+data_save = array.array('B', [0]*46)
 universe = 1
 range_channels = range(CHANNEL_RANGE[0], CHANNEL_RANGE[1])
 def DmxSent(status):
@@ -132,7 +132,7 @@ def write_group(group: List[int], mode: int, value: int = MAX_LIGHT):
         group = [group]
     print(group)
     for chan in group:
-        data_save[chan-1] = mode*value
+        data_save[chan] = mode*value
     client.SendDmx(universe, data_save, DmxSent)
 
 def write_everything(mode: int, value: int = MAX_LIGHT):
