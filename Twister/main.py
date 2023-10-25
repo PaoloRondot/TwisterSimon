@@ -83,7 +83,7 @@ for bouton in all_boutons:
     GPIO.setup(bouton[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-subprocess.Popen(["ola_patch", "-d", "9", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
+subprocess.Popen(["ola_patch", "-d", "3", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
 wrapper = ClientWrapper()
 client = wrapper.Client()
 
