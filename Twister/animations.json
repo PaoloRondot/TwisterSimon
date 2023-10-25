@@ -162,7 +162,7 @@
                         [],
                         []
                     ],
-                    "delay_sec_between": 0.8,
+                    "delay_sec_between": 1.4,
                     "repeat": 2 
                 }, 
                 {
