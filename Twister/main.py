@@ -209,7 +209,7 @@ def play_anim(name_anim: str):
                     break
 
 def pick_random_and_play(anim_type: str):
-    pygame.mixer.music.load("/home/pi/TwisterSimon/wait.mp3")
+    pygame.mixer.music.load("/home/" + USER_NAME + "/TwisterSimon/wait.mp3")
     pygame.mixer.music.play(-1,0)
     while True:
         if check_interrupt():
