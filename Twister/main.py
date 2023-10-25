@@ -172,6 +172,7 @@ def check_interrupt() -> bool:
 
 def read_anim(sequence: list, delay: float, repeat: int):
     if repeat == 0:
+        group = [i-1 for i in group]
         for group in sequence:
             data = array.array('B')
             for chan in range_channels:
@@ -230,9 +231,9 @@ def pick_random_and_play(anim_type: str):
         if check_interrupt():
             pygame.mixer.music.stop()
             return
-while True:
-    play_anim("test_charlie")
-    time.sleep(5)
+# while True:
+#     play_anim("test_charlie")
+#     time.sleep(5)
 # input("paolo")
 def loop_twister():
     # if GPIO.input(SWITCH_TWISTER) == 0:
