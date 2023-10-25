@@ -24,8 +24,8 @@ import json
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
-DELAY_WAITING = 60
-DELAY_WAITING_BETWEEN = 60
+DELAY_WAITING = 30
+DELAY_WAITING_BETWEEN = 30
 MAX_LIGHT = 255
 
 GPIO.setmode(GPIO.BOARD)
@@ -86,7 +86,7 @@ GPIO.setup(SWITCH_TWISTER, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 # result = subprocess.run(["ola_dev_info"], stdout=subprocess.PIPE)
 # print(result.stdout)
-# subprocess.Popen(["ola_patch", "-d", "3", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
+subprocess.Popen(["ola_patch", "-d", "3", "-p", "0", "-u", "1"], stdout = subprocess.PIPE, text = True)
 wrapper = ClientWrapper()
 client = wrapper.Client()
 
@@ -145,7 +145,7 @@ def write_everything(mode: int, value: int = MAX_LIGHT):
 write_everything(0)
 
 time.sleep(1)
-write_everything(1, 25)
+write_everything(1, 255)
 
 time.sleep(1)
 write_everything(0)
@@ -209,8 +209,11 @@ def play_anim(name_anim: str):
                     break
 
 def pick_random_and_play(anim_type: str):
+    pygame.mixer.music.load("/home/pi/TwisterSimon/wait.mp3")
+    pygame.mixer.music.play(-1,0)
     while True:
         if check_interrupt():
+            pygame.mixer.music.stop()
             return
         list_anims = animations["animations"]
         for anim in list_anims:
@@ -222,8 +225,10 @@ def pick_random_and_play(anim_type: str):
         start_time = time.time()
         while time.time() - start_time < DELAY_WAITING_BETWEEN:
             if check_interrupt():
+                pygame.mixer.music.stop()
                 return
         if check_interrupt():
+            pygame.mixer.music.stop()
             return
 
 # play_anim("paolo_test")
