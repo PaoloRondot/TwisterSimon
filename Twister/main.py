@@ -24,8 +24,8 @@ import json
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
-DELAY_WAITING = 30
-DELAY_WAITING_BETWEEN = 30
+DELAY_WAITING = 20
+DELAY_WAITING_BETWEEN = 20
 MAX_LIGHT = 255
 
 GPIO.setmode(GPIO.BOARD)

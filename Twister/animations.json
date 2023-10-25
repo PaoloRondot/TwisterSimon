@@ -139,7 +139,7 @@
                         
                         
                         ],
-                    "delay_sec_between": 0.6,
+                    "delay_sec_between": 0.5,
                     "repeat": 1 
                 }, 
                 {
