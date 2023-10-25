@@ -184,11 +184,10 @@ def read_anim(sequence: list, delay: float, repeat: int):
     else:
         for i in range(0, repeat):
             for group in sequence:
-                group = [i-1 for i in group]
-                print(group)
+                group_minus = [i-1 for i in group]
                 data = array.array('B')
                 for chan in range_channels:
-                    if chan in group:
+                    if chan in group_minus:
                         data.append(MAX_LIGHT)
                     else:
                         data.append(0)
