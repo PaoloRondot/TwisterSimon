@@ -10,7 +10,6 @@ import pygame
 import time
 import os
 import array
-# os.environ['SDL_AUDIODRIVER'] = 'dsp'
 import subprocess
 import glob
 from dataclasses import dataclass
