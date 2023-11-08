@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-USER_NAME = "midirasp02"
-# USER_NAME = "pi"
+# USER_NAME = "midirasp02"
+USER_NAME = "pi"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
