@@ -121,6 +121,16 @@ systemctl --user daemon-reload
 systemctl --user enable twister.service
 ```
 
+# For reboot every day
+Run the commandf
+```
+crontab -e
+```
+and paste at the end of the file
+```
+@daily cd /home/pi/TwisterSimon; /bin/git pull; sudo reboot
+```
+
 # For Paolo
 Show ola stuff
 ```
