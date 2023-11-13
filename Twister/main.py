@@ -347,10 +347,10 @@ def loop_simon():
                         while GPIO.input(bouton[0]) == 1:
                             pass
                         chan1.play(bouton_music[button_pointer][1])
-                        write_group(bouton_led[button_pointer].channels, 1)
+                        write_group(bouton_music[button_pointer].channels, 1)
                         while chan1.get_busy():
                             pass
-                        write_group(bouton_led[button_pointer].channels, 0)
+                        write_group(bouton_music[button_pointer].channels, 0)
                         button_pointer = button_pointer + 1
                         print("GOOD")
                         if button_pointer+1 in list_boutons:
