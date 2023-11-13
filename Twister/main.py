@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-USER_NAME = "midirasp02"
-# USER_NAME = "pi"
+# USER_NAME = "midirasp02"
+USER_NAME = "pi"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
@@ -325,11 +325,11 @@ def loop_simon():
                 for i in range(0,level+1):
                     chan1.play(bouton_music[i][1])
                     print(bouton_led)
-                    print("writing to " + str(bouton_music[i][0]))
-                    write_group(bouton_led[i].channels, 1)
+                    print("writing to " + str(list_boutons[i]))
+                    write_group(bouton_led[list_boutons[i]].channels, 1)
                     while chan1.get_busy():
                         pass
-                    write_group(bouton_led[i].channels, 0)
+                    write_group(bouton_led[list_boutons[i]].channels, 0)
                 my_turn = False
                 print("YOUR TURN")
                 print(str(bouton_music[button_pointer][0]))
@@ -347,10 +347,10 @@ def loop_simon():
                         while GPIO.input(bouton[0]) == 1:
                             pass
                         chan1.play(bouton_music[button_pointer][1])
-                        write_group(bouton_music[button_pointer].channels, 1)
+                        write_group(bouton_led[bouton_i].channels, 1)
                         while chan1.get_busy():
                             pass
-                        write_group(bouton_music[button_pointer].channels, 0)
+                        write_group(bouton_led[bouton_i].channels, 0)
                         button_pointer = button_pointer + 1
                         print("GOOD")
                         if button_pointer+1 in list_boutons:
