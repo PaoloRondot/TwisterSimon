@@ -156,7 +156,7 @@ def sleep_custom(delay_sec: int):
         time.sleep(delay_sec / 100)
         if check_interrupt():
             return
-        if counter == delay_sec * 100:
+        if counter >= delay_sec * 100:
             break
         counter += 1
 
@@ -198,7 +198,6 @@ def read_anim(sequence: list, delay: float, repeat: int):
 
 def play_anim(name_anim: str):
     for anim_type in animations["animations"]:
-        print(anim_type)
         for anims in anim_type:
             for anim in anim_type[anims]:
                 if anim["anim_name"] == name_anim:
@@ -227,9 +226,6 @@ def pick_random_and_play(anim_type: str):
         if check_interrupt():
             pygame.mixer.music.stop()
             return
-# while True:
-#     play_anim("test_charlie")
-#     time.sleep(5)
 # input("paolo")
 def loop_twister():
     # if GPIO.input(SWITCH_TWISTER) == 0:
@@ -316,12 +312,17 @@ def loop_simon():
                     reset = True
                     game_running = False
                     chan1.play(song_winner_simon)
-                    play_anim("simonwinblack")
-                    play_anim("simonwin")
-                    # write_everything(1, 10)
+                    # play_anim("simonwinblack")
+                    # play_anim("simonwin")
+                    for i in range(0,25):
+                        write_everything(1, 10)
+                        time.sleep(0.1)
+                        write_everything(0)
+                        time.sleep(0.1)
                     while chan1.get_busy():
                         pass
-                    # write_everything(0)
+                    write_everything(0)
+                    start_time = time.time()
                     break
                 for i in range(0,level+1):
                     chan1.play(bouton_music[i][1])
@@ -362,11 +363,15 @@ def loop_simon():
                             pass
                         print("YOU LOST")
                         chan1.play(song_wrong_simon)
-                        play_anim("simonwrong")
+                        write_everything(1, 10)
+                        time.sleep(1)
+                        write_everything(0)
+                        # play_anim("simonwrong")
                         while chan1.get_busy():
                             pass
                         reset = True
                         game_running = False
+                        start_time = time.time()
                         break
 
 while True:
