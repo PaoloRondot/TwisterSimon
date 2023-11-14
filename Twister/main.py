@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-USER_NAME = "midirasp02"
-# USER_NAME = "pi"
+# USER_NAME = "midirasp02"
+USER_NAME = "pi"
 
 import sys
 sys.path.append("/home/" + USER_NAME + "/ola/python")
@@ -201,7 +201,6 @@ def play_anim(name_anim: str):
         print(anim_type)
         for anims in anim_type:
             for anim in anim_type[anims]:
-                print(anim)
                 if anim["anim_name"] == name_anim:
                     read_anim(anim["sequence"], anim["delay_sec_between"], anim["repeat"])
                     break
@@ -317,10 +316,12 @@ def loop_simon():
                     reset = True
                     game_running = False
                     chan1.play(song_winner_simon)
-                    write_everything(1, 10)
+                    play_anim("simonwinblack")
+                    play_anim("simonwin")
+                    # write_everything(1, 10)
                     while chan1.get_busy():
                         pass
-                    write_everything(0)
+                    # write_everything(0)
                     break
                 for i in range(0,level+1):
                     chan1.play(bouton_music[i][1])
@@ -361,6 +362,7 @@ def loop_simon():
                             pass
                         print("YOU LOST")
                         chan1.play(song_wrong_simon)
+                        play_anim("simonwrong")
                         while chan1.get_busy():
                             pass
                         reset = True
