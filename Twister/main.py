@@ -108,7 +108,7 @@ chan8 = pygame.mixer.Channel(7)
 
 all_channels = [chan1, chan2, chan3, chan4, chan5, chan6, chan7, chan8]
 
-list_dir_twister = ['/home/' + USER_NAME + '/TwisterSimon/Lacoste/*.wav']
+list_dir_twister = ['/home/' + USER_NAME + '/TwisterSimon/Lacoste/*.mp3']
 song_dir_twister:Dict[int, Song] = dict()
 
 for index, dir in enumerate(list_dir_twister):
