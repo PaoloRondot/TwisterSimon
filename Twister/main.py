@@ -315,7 +315,7 @@ def loop_simon():
                     # play_anim("simonwinblack")
                     # play_anim("simonwin")
                     for i in range(0,25):
-                        write_everything(1, 10)
+                        write_everything(1)
                         time.sleep(0.1)
                         write_everything(0)
                         time.sleep(0.1)
@@ -363,7 +363,7 @@ def loop_simon():
                             pass
                         print("YOU LOST")
                         chan1.play(song_wrong_simon)
-                        write_everything(1, 10)
+                        write_everything(1)
                         time.sleep(1)
                         write_everything(0)
                         # play_anim("simonwrong")
