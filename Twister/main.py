@@ -12,6 +12,7 @@ import multiprocessing
 from random import shuffle, randrange
 
 GPIO.setmode(GPIO.BOARD)
+USERNAME = "midirasp03"
 
 @dataclass
 class Song:
@@ -52,14 +53,14 @@ pygame.mixer.set_num_channels(50)
 chan1 = pygame.mixer.Channel(0)
 
 song_dir_simon:Dict[int, Song] = dict()
-list_dir_simon = ['/home/pi/TwisterSimon/Simon/*.mp3']
-song_dir_simon[0] = Song(dir, ['/home/pi/TwisterSimon/Simon/' + str(i)+".mp3" for i in range(1,9)], [])
+list_dir_simon = ['/home/' + USERNAME + '/TwisterSimon/Simon/*.mp3']
+song_dir_simon[0] = Song(dir, ['/home/' + USERNAME + '/TwisterSimon/Simon/' + str(i)+".mp3" for i in range(1,9)], [])
 print(song_dir_simon[0].all_parts)
 for song_path in song_dir_simon[0].all_parts:
     print(song_path)
     song_dir_simon[0].all_pygame_sounds.append(pygame.mixer.Sound(song_path))
-song_simon_win = pygame.mixer.Sound("/home/pi/TwisterSimon/Simon/winner.mp3")
-song_simon_wrong = pygame.mixer.Sound("/home/pi/TwisterSimon/Simon/wrong.mp3")
+song_simon_win = pygame.mixer.Sound("/home/" + USERNAME + "/TwisterSimon/Simon/winner.mp3")
+song_simon_wrong = pygame.mixer.Sound("/home/" + USERNAME + "/TwisterSimon/Simon/wrong.mp3")
 
 for bouton, led in bouton_led.items():
     GPIO.output(led, 1)
