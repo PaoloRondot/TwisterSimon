@@ -91,14 +91,14 @@ def sleep_custom(delay_sec):
 
 def play_win():
     for led in led_order:
-        sleep_custom(0.1)
+        sleep_custom(0.2)
         if check_interrupt():
             return
         GPIO.output(led, 1)
     for led in led_opposite:
         if check_interrupt():
             return
-        sleep_custom(0.1)
+        sleep_custom(0.2)
         GPIO.output(led, 0)
 
 def play_wrong():
