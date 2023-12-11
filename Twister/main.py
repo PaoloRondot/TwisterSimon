@@ -41,7 +41,7 @@ bouton_led:Dict[int, int] = {
 }
 
 led_order = [LED1, LED2, LED3, LED4]
-led_opposite = [LED4, LED3, LED2, LED1]
+led_opposite = [LED1, LED2, LED3, LED4]
 
 for bouton, led in bouton_led.items():
     GPIO.setup(bouton, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
