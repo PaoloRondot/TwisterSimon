@@ -21,7 +21,7 @@ class Song:
     all_pygame_sounds: List[pygame.mixer.Sound]
 
 BOUTON1 = 29#5
-BOUTON2 = 31#6
+BOUTON2 = 22#6
 BOUTON3 = 32#12
 BOUTON4 = 36#16
 LED1 = 11#17 
